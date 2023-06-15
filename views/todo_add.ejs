@@ -1,0 +1,104 @@
+<%- include("partials/header") %>
+    <div class="container mt-3">
+        <div class="row">
+        </div>
+    </div>
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col">
+                <h1>Add a todo</h1>
+                <div class="div">
+                    <form id="todoAddTodoForm">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Enter Title</label>
+                            <input type="text" class="form-control" id="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Enter
+                                Description</label>
+                            <textarea class="form-control" id="description"
+                                rows="3"
+                                required></textarea>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"
+                                name="completed" id="completedDone"/>
+                            <label class="form-check-label" for="completedDone">
+                                Mark Done
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"
+                                name="completed" id="completedNotDone" checked/>
+                            <label class="form-check-label"
+                                for="completedFalse">
+                                Not Done
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <div class="text-center">
+                                <input class="btn btn-primary" type="submit"
+                                    value="Add" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            document.getElementById("todoAddTodoForm").addEventListener("submit", function(event){
+                event.preventDefault()
+                console.log("submittig");
+
+                const title = document.getElementById("title").value
+                const description = document.getElementById("description").value
+                const completedDone = document.getElementById("completedDone")
+
+                // console.log("checkbox is ", completedDone.checked);
+                // console.log("checkbox is ", title.value);
+                const body = {
+                    title,
+                    description,
+                    completed: completedDone.checked ? true : false 
+                }
+
+                let token = localStorage.getItem("access_token")
+
+                // fetch(`http://localhost:3000/api/todos/${title}`, {
+                fetch(`/api/todos/`, {
+                    method: "POST",
+                    // without header the request payload will be [object Object]
+                    headers: {
+                        "Accept" : "application/json",
+                        "Content-type": "application/json",
+                        // sending a custom key value in the headers to check it via the middleware isAuthenticated
+                        "authorization": token
+                    },
+                    body: JSON.stringify(body)
+                })
+                // fetch is a promise so need to resolve it
+                .then((response) => {
+                    console.log("---Token respone---", token, response.status);
+
+                    return response.json()
+                    .then((data) => {
+                        if(data.redirect){
+                            alert("You are not logged in. So redirecting you to the login page")
+                            window.location.href = "/auth/login"
+                            return
+                        }
+                        if(data.error){
+                            const errorString = JSON.stringify(data.error)
+                        }
+                        else{
+                            alert(data.message)
+                        }
+                    })
+                })
+                .catch((error)=> alert(error.toString()))
+            })
+        </script>
+    <%- include("partials/footer") %>
